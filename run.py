@@ -7,10 +7,8 @@ try:
         bot.change_currency(currency=input("Select your currency: GEL,EUR,USD,GBP ... ").upper())
         bot.select_place_to_go(input("Where do you want to go? ").strip())
         bot.select_dates(
-            #check_in_date=input("Enter Check in date Exc: 2022-05-25: "),
-            # check_out_date=input("Enter Check out date: "))
-            check_in_date="2022-05-19",
-            check_out_date="2022-05-22")
+            check_in_date=input("Enter Check in date Exc: 2022-05-25: "),
+            check_out_date=input("Enter Check out date Exc: 2022-05-27: "))
         bot.select_adults(int(input("Select adults number: ").strip()))
         bot.click_search()
         bot.apply_filtrations()
