@@ -12,6 +12,14 @@ class BookingReport:
 
     def pull_deal_box_attributes(self):
         collection = []
+        currency = re.match(
+            r"[^&nbsp; 0-9]+",
+            self.boxes_section_element[1].find_element(
+                By.XPATH,
+                './/div[@ data-testid="price-and-discounted-price"]/span'
+                ).get_attribute("innerHTML")
+            ).group()
+    
         for deal_box in self.boxes_section_element:
             # Pullling the hotel name
             hotel_name = deal_box.find_element(
@@ -19,13 +27,6 @@ class BookingReport:
                 "./div/div[2]//h3/a/div[1]"
                 ).get_attribute("innerHTML").strip().replace("amp;","")
             # print(hotel_name)#.text)
-            
-            currency = re.match(r"[^&nbsp; 0-9]+",
-                                deal_box.find_element(
-                                    By.XPATH,
-                                    './/div[@ data-testid="price-and-discounted-price"]/span'
-                                ).get_attribute("innerHTML")
-                                ).group()
 
             try:
                 hotel_price = deal_box.find_element(
