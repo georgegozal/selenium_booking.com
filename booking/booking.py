@@ -1,4 +1,5 @@
 from lib2to3.pgen2 import driver
+from locale import currency
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
@@ -10,8 +11,9 @@ from booking.booking_report import BookingReport
 from prettytable import PrettyTable # pip install prettytable
 import csv
 
+
 class Booking(webdriver.Chrome): # we can use webdriver methods
-    def __init__(self,teardown=False):
+    def __init__(self,teardown=True):
         user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
 
         self.teardown = teardown
@@ -49,7 +51,7 @@ class Booking(webdriver.Chrome): # we can use webdriver methods
             accept_cookies.click()
         except:
             pass
-
+    
     def change_currency(self,currency="USD"):
         currency_element = self.find_element(
             By.CSS_SELECTOR,
@@ -124,8 +126,6 @@ class Booking(webdriver.Chrome): # we can use webdriver methods
         
         for i in range(count - 1): #because min adult is already 1 
             increase_adults_element.click()
-        
-        print("Loading...")
 
 
     def click_search(self):          
@@ -136,9 +136,12 @@ class Booking(webdriver.Chrome): # we can use webdriver methods
 
     def apply_filtrations(self):
         filtration = BookingFiltration(driver=self)
-        filtration.apply_star_rating(3,4,5)
+        filtration.apply_star_rating(input("input star numbers Exc: 3,4,5: ").replace(" ","").split(','))#3,4,5
         self.implicitly_wait(10)
         filtration.sort_price_lowest_first()
+        print("filtrating results by star rating")
+        print("filtrating results by price(lowest first)")
+        print("Loading results...")
 
     def report_result(self):
         hotel_boxes = self.find_elements(
@@ -147,25 +150,23 @@ class Booking(webdriver.Chrome): # we can use webdriver methods
             )
 
         report = BookingReport(hotel_boxes)
+        collection, currency = report.pull_deal_box_attributes()
+        
+
         # create table object with columns
-        columns = ['Hotel Name','Hotel Price','Hotel Score','Hotel Link']
+        columns = ['Hotel Name', f'Hotel Price: {currency}','Hotel Score','Hotel Link']
         table = PrettyTable(
             field_names=columns
         ) 
         # add data rows in the table
-        table.add_rows(report.pull_deal_box_attributes())
+        table.add_rows(collection)
 
-        # with open("hotel_lists.csv", "w") as f:
-        #     writer = csv.writer(f)
-        #     writer.writerow(columns)
-            
-        # for row in report.pull_deal_box_attributes():
-        #     with open("hotel_lists.csv", 'a') as f:
-        #         writer = csv.writer(f)
-        #         writer.writerow(row)
-        f = open("../hotel_list.csv",'w')
+        # write data to csv file
+        print("creating hotel_list.csv file")
+        f = open("hotel_list.csv",'w')
         writer = csv.writer(f)
         writer.writerow(columns)
-        writer.writerows(report.pull_deal_box_attributes())
+        writer.writerows(collection)
         f.close()
         print(table)
+        print("check hotel_list.csv")
